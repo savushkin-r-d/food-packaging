@@ -1,0 +1,3 @@
+org\acme\foodpackaging\solver\FoodPackagingConstraintProviderTest.class
+org\acme\foodpackaging\JarWithDependenciesIT.class
+org\acme\foodpackaging\solver\FoodPackingEnvironmentTest.class

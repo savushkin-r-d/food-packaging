@@ -1,0 +1,9 @@
+D:\Планировщик\food-packaging\src\main\java\org\acme\foodpackaging\app\FoodPackagingApp.java
+D:\Планировщик\food-packaging\src\main\java\org\acme\foodpackaging\bootstrap\DemoDataGenerator.java
+D:\Планировщик\food-packaging\src\main\java\org\acme\foodpackaging\domain\Job.java
+D:\Планировщик\food-packaging\src\main\java\org\acme\foodpackaging\domain\Line.java
+D:\Планировщик\food-packaging\src\main\java\org\acme\foodpackaging\domain\PackagingSchedule.java
+D:\Планировщик\food-packaging\src\main\java\org\acme\foodpackaging\domain\Product.java
+D:\Планировщик\food-packaging\src\main\java\org\acme\foodpackaging\domain\WorkCalendar.java
+D:\Планировщик\food-packaging\src\main\java\org\acme\foodpackaging\persistence\PackagingScheduleRepository.java
+D:\Планировщик\food-packaging\src\main\java\org\acme\foodpackaging\solver\FoodPackagingConstraintProvider.java
