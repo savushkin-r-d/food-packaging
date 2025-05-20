@@ -6,10 +6,7 @@ import java.time.LocalDateTime;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
-import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -20,7 +17,9 @@ public class Job {
     private String id;
     private String name;
 
+    private int quantity;
     private Product product;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateDuration")
     private Duration duration;
     private LocalDateTime minStartTime;
     private LocalDateTime idealEndTime;
@@ -73,6 +72,22 @@ public class Job {
         this.startProductionDateTime = startProductionDateTime;
         this.endDateTime = startProductionDateTime == null ? null : startProductionDateTime.plus(duration);
         this.pinned = pinned;
+    }
+
+    public void updateDuration() {
+        if (line == null || product == null) {
+            duration = Duration.ZERO;
+            return;
+        }
+
+        int rate = line.getProductionRate(product.getType());
+        if (rate <= 0) {
+            duration = Duration.ofDays(365); // Штраф за невозможность производства
+            return;
+        }
+
+        long minutes = (quantity + rate - 1) / rate; // Округление вверх
+        duration = Duration.ofMinutes(minutes);
     }
 
     @Override
