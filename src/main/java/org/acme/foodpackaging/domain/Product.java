@@ -1,7 +1,6 @@
 package org.acme.foodpackaging.domain;
 
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
-import org.acme.foodpackaging.domain.ProductType;
 
 import java.time.Duration;
 import java.util.Map;
@@ -54,6 +53,8 @@ public class Product {
     public String getName() {
         return name;
     }
+
+    public ProductType getType(){ return type; }
 
     public void setName(String name) {
         this.name = name;

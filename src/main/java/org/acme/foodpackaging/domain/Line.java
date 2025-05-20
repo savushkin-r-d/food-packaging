@@ -19,6 +19,8 @@ public class Line {
     private String operator;
     private LocalDateTime startDateTime;
 
+    private Map<ProductType, Integer> productionRates;
+
     @JsonIgnore
     @PlanningListVariable
     private List<Job> jobs;
@@ -27,7 +29,10 @@ public class Line {
     public Line() {
     }
 
-    public Line(String id, String name, Map<ProductType, Integer> rates) {
+    public Line(String id, String name, Map<ProductType, Integer> productionRates) {
+        this.id = id;
+        this.name = name;
+        this.productionRates = productionRates;
     }
 
     public Line(String id, String name, String operator, LocalDateTime startDateTime) {
@@ -38,7 +43,9 @@ public class Line {
         jobs = new ArrayList<>();
     }
 
-    public getProductionRate
+    public int getProductionRate(ProductType productType){
+        return productionRates.get(productType);
+    }
 
     @Override
     public String toString() {

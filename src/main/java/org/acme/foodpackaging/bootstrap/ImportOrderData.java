@@ -16,7 +16,8 @@ import java.util.*;
 public class ImportOrderData {
     private PackagingSchedule ScheduleInitializer(String date){
 
-        private final int lineCount;
+        private const int lineCount =6;
+        List<Product> products = new ArrayList<>();
         final LocalDate START_DATE = LocalDate.parse(date);
         final LocalDateTime START_DATE_TIME = LocalDateTime.of(START_DATE, LocalTime.MIDNIGHT);
         final LocalDate END_DATE = START_DATE.plusDays(1);
@@ -54,7 +55,6 @@ public class ImportOrderData {
                 preparedStatement.setString(1, date + "T00:00:00");     // Параметр для v.DTI
                 preparedStatement.setString(2, "0119030000");          // Параметр для v.KSK
                 preparedStatement.setDouble(3, 0.1);                  // Параметр для m.MASSA
-                int id =0;
 
                 // Выполнение запроса
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -69,31 +69,31 @@ public class ImportOrderData {
                         String emk = resultSet.getString("EMK");
                         int kolmv = resultSet.getInt("KOLMV");
                         String vb = resultSet.getString("MASSA"); // MASSA из таблицы BD_VZPMC
-                        int kolev = resultSet.getInt("KOLEV");
+                        int quantity= resultSet.getInt("KOLEV");
                         String np = resultSet.getString("NP");
                         String priority = resultSet.getString("UX");
                         double massaM = resultSet.getDouble("MASSA"); // MASSA из таблицы NS_MC
-                        String ean13 = resultSet.getString("EAN13");
+                        String id = resultSet.getString("EAN13");
                         String snm = resultSet.getString("SNM");
                         String name = resultSet.getString("NAME");
 
                         ProductType type;
                         if(topKernel.stream().allMatch(name.toLowerCase()::contains) ||
                                 tworobushkiKernel.stream().allMatch(name.toLowerCase()::contains)){
-                            type = ROD;
+                            type = ProductType.ROD;
                         }
                         else if(plush.stream().allMatch(name.toLowerCase()::contains)){
-                            type = PLUSH;
+                            type = ProductType.PLUSH;
                         }
                         else if(kaktus.stream().allMatch(name.toLowerCase()::contains)){
-                            type = CACTUS;
+                            type = ProductType.CACTUS;
                         }
                         else {
-                            type = CLASSIC;
+                            type = ProductType.CLASSIC;
                         }
                         
                         List<Product> products = new ArrayList<>();
-                        products.add(new Product(++id,name, type))
+                        products.add(new Product(id,name, type));
                                 
 
                     }

@@ -20,7 +20,7 @@ public class Job {
     private int quantity;
     private Product product;
     @CascadingUpdateShadowVariable(targetMethodName = "updateDuration")
-    private Duration duration;
+    private Duration duration = Duration.ZERO;
     private LocalDateTime minStartTime;
     private LocalDateTime idealEndTime;
     private LocalDateTime maxEndTime;
@@ -74,6 +74,22 @@ public class Job {
         this.pinned = pinned;
     }
 
+    public Job(String id, String name, Product product, int quantity, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned,
+               LocalDateTime startCleaningDateTime, LocalDateTime startProductionDateTime) {
+        this.id = id;
+        this.name = name;
+        this.product = product;
+        this.quantity = quantity;
+        this.minStartTime = minStartTime;
+        this.idealEndTime = idealEndTime;
+        this.maxEndTime = maxEndTime;
+        this.priority = priority;
+        this.startCleaningDateTime = startCleaningDateTime;
+        this.startProductionDateTime = startProductionDateTime;
+        this.endDateTime = startProductionDateTime == null ? null : startProductionDateTime.plus(duration);
+        this.pinned = pinned;
+    }
+
     public void updateDuration() {
         if (line == null || product == null) {
             duration = Duration.ZERO;
@@ -88,6 +104,10 @@ public class Job {
 
         long minutes = (quantity + rate - 1) / rate; // Округление вверх
         duration = Duration.ofMinutes(minutes);
+
+        if(startProductionDateTime != null){
+            endDateTime =startProductionDateTime.plus(duration);
+        }
     }
 
     @Override
