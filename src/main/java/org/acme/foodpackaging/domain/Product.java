@@ -1,6 +1,7 @@
 package org.acme.foodpackaging.domain;
 
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import org.acme.foodpackaging.domain.ProductType;
 
 import java.time.Duration;
 import java.util.Map;
@@ -10,6 +11,7 @@ public class Product {
     @PlanningId
     private String id;
     private String name;
+    private ProductType type;
     /** The map key is previous product on assembly line. */
     private Map<Product, Duration> cleaningDurations;
 
@@ -21,6 +23,12 @@ public class Product {
         this.name = name;
     }
 
+    public Product(String id, String name, ProductType type) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+    }
+    
     @Override
     public String toString() {
         return name;

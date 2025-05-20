@@ -3,6 +3,7 @@ package org.acme.foodpackaging.domain;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -26,6 +27,9 @@ public class Line {
     public Line() {
     }
 
+    public Line(String id, String name, Map<ProductType, Integer> rates) {
+    }
+
     public Line(String id, String name, String operator, LocalDateTime startDateTime) {
         this.id = id;
         this.name = name;
@@ -33,6 +37,8 @@ public class Line {
         this.startDateTime = startDateTime;
         jobs = new ArrayList<>();
     }
+
+    public getProductionRate
 
     @Override
     public String toString() {
