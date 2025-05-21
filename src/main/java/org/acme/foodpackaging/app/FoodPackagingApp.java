@@ -15,24 +15,26 @@ import java.time.Duration;
 public class FoodPackagingApp {
 
     public static void main(String[] args) {
-        SolverFactory<PackagingSchedule> solverFactory = SolverFactory.create(new SolverConfig()
-                .withSolutionClass(PackagingSchedule.class)
-                .withEntityClasses(Job.class, Line.class)
-                .withConstraintProviderClass(FoodPackagingConstraintProvider.class)
-                // The solver runs only for 5 seconds on this small dataset.
-                // It's recommended to run for at least 5 minutes ("5m") otherwise.
-                .withTerminationSpentLimit(Duration.ofSeconds(5)));
 
-        //   DemoDataGenerator dataGen = new DemoDataGenerator(12, 45);
-        // Load the problem
+        if(args.length!=0) {
+            SolverFactory<PackagingSchedule> solverFactory = SolverFactory.create(new SolverConfig()
+                    .withSolutionClass(PackagingSchedule.class)
+                    .withEntityClasses(Job.class, Line.class)
+                    .withConstraintProviderClass(FoodPackagingConstraintProvider.class)
+                    // The solver runs only for 5 seconds on this small dataset.
+                    // It's recommended to run for at least 5 minutes ("5m") otherwise.
+                    .withTerminationSpentLimit(Duration.ofSeconds(5)));
 
-        ImportOrderData importData = new ImportOrderData();
+            ImportOrderData importData = new ImportOrderData();
 
-        PackagingSchedule problem = importData.scheduleInitializer("2025-05-19");
-        System.out.println("Worked!");
+            PackagingSchedule problem = importData.scheduleInitializer(args[0]);
+            // Solve the problem
+            Solver<PackagingSchedule> solver = solverFactory.buildSolver();
+            PackagingSchedule solution = solver.solve(problem);
+        }
+        else {
+            System.out.println("No date set!");
+        }
 
-        // Solve the problem
-        // Solver<PackagingSchedule> solver = solverFactory.buildSolver();
-        //PackagingSchedule solution = solver.solve(problem);
     }
 }
