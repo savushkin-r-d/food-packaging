@@ -18,6 +18,21 @@ public class LineInitializer {
                 )
         )));
 
+        // Line 1
+        lines.add(new Line("L2", "Линия 2", createProductionRates(
+                Map.of(
+                        ProductType.CACTUS, 196,
+                        ProductType.CLASSIC, 196
+                )
+        )));
+
+        lines.add(new Line("L3", "Линия 3", createProductionRates(
+                Map.of(
+                        ProductType.CACTUS, 206,
+                        ProductType.CLASSIC, 206
+                )
+        )));
+
         // Line 4
         lines.add(new Line("L4", "Линия 4", createProductionRates(
                 Map.of(

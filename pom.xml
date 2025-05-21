@@ -46,6 +46,11 @@
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.microsoft.sqlserver</groupId>
+      <artifactId>mssql-jdbc</artifactId>
+      <version> 12.8.1.jre11</version>
+    </dependency>
     <!-- JSON -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
