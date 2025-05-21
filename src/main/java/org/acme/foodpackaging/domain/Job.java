@@ -19,8 +19,15 @@ public class Job {
 
     private int quantity;
     private Product product;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateDuration")
-    private Duration duration = Duration.ZERO;
+
+
+    // transient для сериализации
+    private static transient DurationProvider durationProvider;
+
+    public static void setDurationProviderStatic(DurationProvider provider) {
+        durationProvider = provider;
+    }
+
     private LocalDateTime minStartTime;
     private LocalDateTime idealEndTime;
     private LocalDateTime maxEndTime;
@@ -54,28 +61,7 @@ public class Job {
     public Job() {
     }
 
-    public Job(String id, String name, Product product, Duration duration, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned) {
-        this(id, name, product, duration, minStartTime, idealEndTime, maxEndTime, priority, pinned, null, null);
-    }
-
-    public Job(String id, String name, Product product, Duration duration, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned,
-               LocalDateTime startCleaningDateTime, LocalDateTime startProductionDateTime) {
-        this.id = id;
-        this.name = name;
-        this.product = product;
-        this.duration = duration;
-        this.minStartTime = minStartTime;
-        this.idealEndTime = idealEndTime;
-        this.maxEndTime = maxEndTime;
-        this.priority = priority;
-        this.startCleaningDateTime = startCleaningDateTime;
-        this.startProductionDateTime = startProductionDateTime;
-        this.endDateTime = startProductionDateTime == null ? null : startProductionDateTime.plus(duration);
-        this.pinned = pinned;
-    }
-
-    public Job(String id, String name, Product product, int quantity, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned
-    ) {
+    public Job(String id, String name, Product product, int quantity, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned) {
         this.id = id;
         this.name = name;
         this.product = product;
@@ -87,24 +73,9 @@ public class Job {
         this.pinned = pinned;
     }
 
-    public void updateDuration() {
-        if (line == null || product == null) {
-            duration = Duration.ZERO;
-            return;
-        }
-
-        int rate = line.getProductionRate(product.getType());
-        if (rate <= 0) {
-            duration = Duration.ofDays(365); // Штраф за невозможность производства
-            return;
-        }
-
-        long minutes = (quantity + rate - 1) / rate; // Округление вверх
-        duration = Duration.ofMinutes(minutes);
-
-        if(startProductionDateTime != null){
-            endDateTime =startProductionDateTime.plus(duration);
-        }
+    public Duration getDuration() {
+        if (line == null || product == null || durationProvider == null) return null;
+        return durationProvider.calculateDuration(line, product, quantity);
     }
 
     @Override
@@ -120,6 +91,7 @@ public class Job {
         return id;
     }
 
+    public int getQuantity() { return quantity; }
 
     public String getName() {
         return name;
@@ -127,10 +99,6 @@ public class Job {
 
     public Product getProduct() {
         return product;
-    }
-
-    public Duration getDuration() {
-        return duration;
     }
 
     public LocalDateTime getMinStartTime() {
@@ -155,6 +123,10 @@ public class Job {
 
     public Line getLine() {
         return line;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
     public void setLine(Line line) {
@@ -207,6 +179,8 @@ public class Job {
 
     @SuppressWarnings("unused")
     private void updateStartCleaningDateTime() {
+
+        Duration duration = getDuration();
         if (getLine() == null) {
             if (getStartCleaningDateTime() != null) {
                 setStartCleaningDateTime(null);
@@ -227,7 +201,7 @@ public class Job {
         }
         setStartCleaningDateTime(startCleaning);
         setStartProductionDateTime(startProduction);
-        var endTime = startProduction == null ? null : startProduction.plus(getDuration());
+        var endTime =  (startProduction == null || duration == null) ? null : startProduction.plus(duration);
         setEndDateTime(endTime);
     }
 

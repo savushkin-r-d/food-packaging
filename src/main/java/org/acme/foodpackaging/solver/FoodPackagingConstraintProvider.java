@@ -72,7 +72,7 @@ public class FoodPackagingConstraintProvider implements ConstraintProvider {
 
     protected Constraint minimizeMakespan(ConstraintFactory factory) {
         return factory.forEach(Job.class)
-                .filter(job -> job.getLine() != null && job.getNextJob() == null)
+                .filter(job -> job.getLine() != null && job.getNextJob() == null && job.getEndDateTime() != null)
                 .penalizeLong(HardMediumSoftLongScore.ONE_SOFT, job -> {
                     long minutes = Duration.between(job.getLine().getStartDateTime(), job.getEndDateTime()).toMinutes();
                     return minutes * minutes;

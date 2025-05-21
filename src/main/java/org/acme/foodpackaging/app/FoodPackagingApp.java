@@ -3,7 +3,6 @@ package org.acme.foodpackaging.app;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import org.acme.foodpackaging.bootstrap.DemoDataGenerator;
 import org.acme.foodpackaging.bootstrap.ImportOrderData;
 import org.acme.foodpackaging.domain.Job;
 import org.acme.foodpackaging.domain.Line;

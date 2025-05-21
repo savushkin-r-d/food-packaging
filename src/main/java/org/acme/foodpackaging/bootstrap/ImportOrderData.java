@@ -40,9 +40,10 @@ public class ImportOrderData {
         solution.setWorkCalendar(new WorkCalendar(START_DATE, END_DATE));
 
         // Инициализация линий
-        List<Line> lines = LineInitializer.createLines();
+        List<Line> lines = createLines(LINE_COUNT, START_DATE_TIME);
 
         // Загрузка продуктов и заданий из БД
+        Map<String, Product> productMap = new HashMap<>();
         List<Product> products = new ArrayList<>();
         List<Job> jobs = new ArrayList<>();
 
@@ -64,6 +65,7 @@ public class ImportOrderData {
                 preparedStatement.setString(2, "0119030000");          // Параметр для v.KSK
                 preparedStatement.setDouble(3, 0.1);                  // Параметр для m.MASSA
 
+                int id=0;
                 // Выполнение запроса
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     // Обработка результата
@@ -85,12 +87,16 @@ public class ImportOrderData {
                         String snm = resultSet.getString("SNM");
                         String name = resultSet.getString("NAME");
 
-                        Product product = createProduct(ean13, name);
-                        products.add(product);
+                        Product product = productMap.get(ean13);
+                        if (product == null) {
+                            product = createProduct(ean13, name);
+                            productMap.put(ean13, product);
+                            products.add(product); // Добавляем только один раз
+                        }
 
                         // Создание задания
                         Job job = createJob(
-                                ean13,
+                                String.valueOf(++id),
                                 product,
                                 quantity,
                                 DEFAULT_PRIORITY,
@@ -188,6 +194,17 @@ public class ImportOrderData {
             currentProduct.setCleaningDurations(cleaningDurationMap);
         }
 
+    }
+
+    private List<Line> createLines(int lineCount, LocalDateTime startDateTime){
+
+        List<Line> lines = new ArrayList<>(lineCount);
+        for(int i=1; i<=lineCount; ++i){
+            String name = "Line" + String.valueOf(i);
+            Line line = new Line(String.valueOf(i), name, "Miku",startDateTime);
+            lines.add(line);
+        }
+        return lines;
     }
     private ProductType determineProductType(String productName) {
         String lowerName = productName.toLowerCase();

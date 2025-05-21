@@ -3,7 +3,6 @@ package org.acme.foodpackaging.domain;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,8 +18,6 @@ public class Line {
     private String operator;
     private LocalDateTime startDateTime;
 
-    private Map<ProductType, Integer> productionRates;
-
     @JsonIgnore
     @PlanningListVariable
     private List<Job> jobs;
@@ -29,10 +26,9 @@ public class Line {
     public Line() {
     }
 
-    public Line(String id, String name, Map<ProductType, Integer> productionRates) {
+    public Line(String id, String name) {
         this.id = id;
         this.name = name;
-        this.productionRates = productionRates;
     }
 
     public Line(String id, String name, String operator, LocalDateTime startDateTime) {
@@ -41,10 +37,7 @@ public class Line {
         this.operator = operator;
         this.startDateTime = startDateTime;
         jobs = new ArrayList<>();
-    }
 
-    public int getProductionRate(ProductType productType){
-        return productionRates.get(productType);
     }
 
     @Override
