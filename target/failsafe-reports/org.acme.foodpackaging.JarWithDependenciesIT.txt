@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: org.acme.foodpackaging.JarWithDependenciesIT
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.402 s -- in org.acme.foodpackaging.JarWithDependenciesIT
