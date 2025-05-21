@@ -74,8 +74,8 @@ public class Job {
         this.pinned = pinned;
     }
 
-    public Job(String id, String name, Product product, int quantity, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned,
-               LocalDateTime startCleaningDateTime, LocalDateTime startProductionDateTime) {
+    public Job(String id, String name, Product product, int quantity, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned
+    ) {
         this.id = id;
         this.name = name;
         this.product = product;
@@ -84,9 +84,6 @@ public class Job {
         this.idealEndTime = idealEndTime;
         this.maxEndTime = maxEndTime;
         this.priority = priority;
-        this.startCleaningDateTime = startCleaningDateTime;
-        this.startProductionDateTime = startProductionDateTime;
-        this.endDateTime = startProductionDateTime == null ? null : startProductionDateTime.plus(duration);
         this.pinned = pinned;
     }
 
