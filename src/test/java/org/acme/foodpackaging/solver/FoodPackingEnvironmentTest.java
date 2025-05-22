@@ -40,6 +40,5 @@ class FoodPackingEnvironmentTest {
         Solver<PackagingSchedule> solver = solverFactory.buildSolver();
         PackagingSchedule solution = solver.solve(problem);
         assertThat(solution.getScore()).isNotNull();
-        System.out.println("point");
     }
 }
