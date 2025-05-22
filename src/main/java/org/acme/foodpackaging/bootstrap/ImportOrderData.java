@@ -5,6 +5,7 @@ import org.acme.foodpackaging.domain.*;
 import java.sql.*;
 import java.time.*;
 import java.util.*;
+import java.util.regex.*;
 
 public class ImportOrderData {
 
@@ -87,6 +88,9 @@ public class ImportOrderData {
                         String snm = resultSet.getString("SNM");
                         String name = resultSet.getString("NAME");
 
+                        int defaultDuration = 0; // Это может быть 0!
+                        if (quantity == 0) continue;
+
                         Product product = productMap.get(ean13);
                         if (product == null) {
                             product = createProduct(ean13, name);
@@ -99,6 +103,7 @@ public class ImportOrderData {
                                 String.valueOf(++id),
                                 product,
                                 quantity,
+                                defaultDuration,
                                 DEFAULT_PRIORITY,
                                 START_DATE_TIME
                         );
@@ -116,7 +121,9 @@ public class ImportOrderData {
 
         solution.setLines(lines);
         solution.setProducts(products);
+        jobs.sort(Comparator.comparing(Job::getName));
         solution.setJobs(jobs);
+
         return solution;
     }
 
@@ -223,15 +230,22 @@ public class ImportOrderData {
         return true;
     }
 
-    private Job createJob(String id, Product product, int quantity, int priority, LocalDateTime startDate) {
+    private Job createJob(String id, Product product, int quantity, int duration, int priority, LocalDateTime startDate) {
+        Pattern pattern = Pattern.compile("\"([^\"]+)\"");
+        String jobName = product.getName();
+        Matcher matcher = pattern.matcher(jobName);
+        if (matcher.find()) {
+            jobName = matcher.group(1); // Внутри кавычек
+        }
         return new Job(
                 id,
-                product.getName() + " #" + id,
+                jobName + " #" + id,
                 product,
                 quantity,
+                Duration.ofMinutes(duration),
                 startDate,
-                startDate.plusHours(4), // Идеальное время завершения
-                startDate.plusHours(8), // Максимальное время завершения
+                startDate.plusHours(3), // Идеальное время завершения
+                startDate.plusHours(6), // Максимальное время завершения
                 priority,
                 false
         );
