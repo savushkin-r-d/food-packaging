@@ -4,6 +4,7 @@ import org.acme.foodpackaging.domain.*;
 
 import java.sql.*;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.*;
 
@@ -12,6 +13,7 @@ public class ImportOrderData {
 
     private static final int LINE_COUNT = 6;
     private static final int DEFAULT_PRIORITY = 0;
+    private LocalDateTime DATE;
 
     final int ALLERGEN_DIFFERENT_GLAZE = 90;
     final int CLEANING_AFTER_ALLERGEN = 240;
@@ -29,6 +31,7 @@ public class ImportOrderData {
             "4810268056826", true
     );
 
+    public LocalDateTime getDATE() { return DATE; }
     public PackagingSchedule scheduleInitializer(String date){
 
         final LocalDate START_DATE = LocalDate.parse(date);
@@ -39,6 +42,7 @@ public class ImportOrderData {
         PackagingSchedule solution = new PackagingSchedule();
 
         solution.setWorkCalendar(new WorkCalendar(START_DATE, END_DATE));
+        DATE = START_DATE_TIME;
 
         // Инициализация линий
         List<Line> lines = createLines(LINE_COUNT, START_DATE_TIME);
