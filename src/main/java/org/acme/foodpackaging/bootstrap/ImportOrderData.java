@@ -104,6 +104,7 @@ public class ImportOrderData {
                         // Создание задания
                         Job job = createJob(
                                 String.valueOf(++id),
+                                np,
                                 product,
                                 quantity,
                                 defaultDuration,
@@ -234,7 +235,7 @@ public class ImportOrderData {
         return true;
     }
 
-    private Job createJob(String id, Product product, int quantity, int duration, int priority, LocalDateTime startDate) {
+    private Job createJob(String id, String np, Product product, int quantity, int duration, int priority, LocalDateTime startDate) {
         Pattern pattern = Pattern.compile("\"([^\"]+)\"");
         String jobName = product.getName();
         Matcher matcher = pattern.matcher(jobName);

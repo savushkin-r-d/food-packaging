@@ -20,6 +20,7 @@ public class Job {
     @PlanningId
     private String id;
     private String name;
+    private String np;
 
     private Product product;
     private int quantity;
@@ -86,10 +87,11 @@ public class Job {
         this.pinned = pinned;
     }
 
-    public Job(String id, String name, Product product, int quantity, Duration duration, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned,
+    public Job(String id, String name, String np, Product product, int quantity, Duration duration, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned,
                LocalDateTime startCleaningDateTime, LocalDateTime startProductionDateTime) {
         this.id = id;
         this.name = name;
+        this.np = np;
         this.product = product;
         this.quantity = quantity;
         this.duration = duration;
@@ -103,8 +105,8 @@ public class Job {
         this.pinned = pinned;
     }
 
-    public Job(String id, String name, Product product, int quantity, Duration duration, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned) {
-        this(id, name, product, quantity, duration, minStartTime, idealEndTime, maxEndTime, priority, pinned, null, null);
+    public Job(String id, String name, String np, Product product, int quantity, Duration duration, LocalDateTime minStartTime, LocalDateTime idealEndTime, LocalDateTime maxEndTime, int priority, boolean pinned) {
+        this(id, name, np, product, quantity, duration, minStartTime, idealEndTime, maxEndTime, priority, pinned, null, null);
     }
 
     @Override

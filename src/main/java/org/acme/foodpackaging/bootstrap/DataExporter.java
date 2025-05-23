@@ -90,11 +90,6 @@ public class DataExporter {
         List<JobRecord> jobRecordList = new ArrayList<>(jobs.size());
 
        for(Job job : jobs){
-            String lineName = lines.stream()
-                    .filter(line -> line.getJobs().contains(job))
-                    .map(Line::getName)
-                    .findFirst()
-                    .orElse("UNASSIGNED");
 
             jobRecordList.add(new JobRecord(
                     job.getId(),
@@ -102,7 +97,7 @@ public class DataExporter {
                     job.getProduct().getType().getDisplayName(),
                     job.getProduct().getGlaze().getDisplayName(),
                     String.valueOf(job.getQuantity()),
-                    lineName,
+                    "UNASSIGNED",
                     String.valueOf(job.getDuration()))
             );
         }
