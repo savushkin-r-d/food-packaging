@@ -1,6 +1,7 @@
 package org.acme.foodpackaging.bootstrap;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -20,7 +21,6 @@ import java.util.*;
 
 public class DataExporter {
 
-    private HardMediumSoftScore totalScore;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private String date;
@@ -28,11 +28,12 @@ public class DataExporter {
        this.date =date;
     }
 
-    public void exportAsJson(PackagingSchedule problem){
+    public void exportAsJson(PackagingSchedule solution, HardMediumSoftLongScore totalScore){
         Map<String, Object> jsonMap = new HashMap<>();
-        List<JobRecord> jobList = getJobList(problem.getJobs(), problem.getLines());
-        jsonMap.put("DATE", date);
-        jsonMap.put("Job", jobList);
+        jsonMap.put("TotalMatch", totalScore);
+        jsonMap.put("WorkCalendar", solution.getWorkCalendar());
+        jsonMap.put("Lines", solution.getLines());
+        jsonMap.put("Jobs", solution.getJobs());
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
@@ -87,7 +88,8 @@ public class DataExporter {
     private List<JobRecord> getJobList(List<Job> jobs, List<Line> lines){
 
         List<JobRecord> jobRecordList = new ArrayList<>(jobs.size());
-        for(Job job : jobs){
+
+       for(Job job : jobs){
             String lineName = lines.stream()
                     .filter(line -> line.getJobs().contains(job))
                     .map(Line::getName)

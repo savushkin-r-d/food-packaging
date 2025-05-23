@@ -2,6 +2,7 @@ package org.acme.foodpackaging.app;
 
 import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -39,10 +40,11 @@ public class FoodPackagingApp {
             Solver<PackagingSchedule> solver = solverFactory.buildSolver();
             PackagingSchedule solution = solver.solve(problem);
 
+            HardMediumSoftLongScore score = problem.getScore();
             SolutionManager< PackagingSchedule, HardMediumSoftScore> solutionManager = SolutionManager.create(solverFactory);
             ScoreExplanation< PackagingSchedule, HardMediumSoftScore> scoreExplanation = solutionManager.explain(solution);
 
-            exporter.exportAsJson(problem);
+            exporter.exportAsJson(solution, score);
             
         }
         else {
