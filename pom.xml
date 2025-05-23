@@ -37,11 +37,6 @@
         <artifactId>jackson-databind</artifactId>
         <version>2.18.1</version>
       </dependency>
-      <dependency>
-        <groupId>com.fasterxml.jackson.datatype</groupId>
-        <artifactId>jackson-datatype-jsr310</artifactId>
-        <version>2.18.1</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -57,7 +52,11 @@
       <version> 12.8.1.jre11</version>
     </dependency>
     <!-- JSON -->
-<!-- Removed duplicate jackson-datatype-jsr310 dependency to avoid redundancy -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>2.18.1</version>
+    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
