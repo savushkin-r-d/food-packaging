@@ -81,7 +81,7 @@ public class DataExporter {
             yamlMapper.writeValue(new File(filePath),yamlMap);
             System.out.println("YAML файл успешно создан: " + filePath);
         } catch (IOException e) {
-            System.err.println("Ошибка при создании JSON файла: " + e.getMessage());
+            System.err.println("Ошибка при создании YAML файла: " + e.getMessage());
         }
     }
 
