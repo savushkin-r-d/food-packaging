@@ -26,12 +26,18 @@ public class Line {
     public Line() {
     }
 
+    public Line(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
     public Line(String id, String name, String operator, LocalDateTime startDateTime) {
         this.id = id;
         this.name = name;
         this.operator = operator;
         this.startDateTime = startDateTime;
         jobs = new ArrayList<>();
+
     }
 
     @Override

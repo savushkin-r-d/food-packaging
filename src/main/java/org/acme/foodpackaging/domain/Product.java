@@ -10,6 +10,9 @@ public class Product {
     @PlanningId
     private String id;
     private String name;
+    private ProductType type;
+    private GlazeType glaze;
+    private boolean allergen;
     /** The map key is previous product on assembly line. */
     private Map<Product, Duration> cleaningDurations;
 
@@ -19,6 +22,14 @@ public class Product {
     public Product(String id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public Product(String id, String name, ProductType type, boolean allergen) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+        this.glaze = GlazeType.fromProduct(id, type);
+        this.allergen = allergen;
     }
 
     @Override
@@ -39,6 +50,12 @@ public class Product {
     // Getters and setters
     // ************************************************************************
 
+    public ProductType getProductType() { return type; }
+
+    public GlazeType getGlaze(){ return glaze; }
+
+    public boolean is_allergen() { return allergen; }
+
     public String getId() {
         return id;
     }
@@ -46,6 +63,8 @@ public class Product {
     public String getName() {
         return name;
     }
+
+    public ProductType getType(){ return type; }
 
     public void setName(String name) {
         this.name = name;
