@@ -136,8 +136,7 @@ public class ImportOrderData {
         return new Product(id, name, type, IS_ALLERGEN.getOrDefault(id, false));
     }
 
-    private void initCleaningDurations(List<Product> products){
-
+    private void initCleaningDurations(List<Product> products) {
         Random random = new Random();
 
         for (Product currentProduct : products) {
@@ -146,55 +145,56 @@ public class ImportOrderData {
             for (Product previousProduct : products) {
                 Duration cleaningDuration;
 
-                // 1. Проверка на одинаковый ID
+
+                // 1. Одинаковый продукт → без чистки
                 if (currentProduct.getId().equals(previousProduct.getId())) {
                     cleaningDuration = Duration.ZERO;
                 }
-                // 2. Предыдущий продукт - CACTUS
-                else if (previousProduct.getType() == ProductType.CACTUS) {
+                // 2. Один из продуктов — CACTUS → всегда 3 часа
+                else if (currentProduct.getType() == ProductType.CACTUS && previousProduct.getType() != ProductType.CACTUS
+                        || currentProduct.getType() != ProductType.CACTUS && previousProduct.getType() == ProductType.CACTUS) {
                     cleaningDuration = Duration.ofMinutes(CACTUS_CLEANING);
                 }
-                // 2. Предыдущий продукт - CACTUS
+                // 3. Предыдущий аллерген, текущий — нет
                 else if (previousProduct.is_allergen() && !currentProduct.is_allergen()) {
                     cleaningDuration = Duration.ofMinutes(CLEANING_AFTER_ALLERGEN);
                 }
-
+                // 4. Текущий CLASSIC, предыдущий ROD
                 else if (currentProduct.getType() == ProductType.CLASSIC
                         && previousProduct.getType() == ProductType.ROD) {
                     cleaningDuration = Duration.ofMinutes(FROM_ROD_TO_CLASSIC);
                 }
-                // 3. Текущий ROD, разные ID и предыдущий не C65_47
+                // 5. Оба ROD, разные глазури
                 else if (currentProduct.getType() == ProductType.ROD
                         && previousProduct.getType() == ProductType.ROD
                         && !previousProduct.getGlaze().equals(GlazeType.C65_47)) {
                     cleaningDuration = Duration.ofMinutes(ROD_DIFFERENT_FILLING);
                 }
-
-                // 4. Оба аллергены с разной глазурью
+                // 6. Оба аллергены, разные глазури
                 else if (currentProduct.is_allergen() && previousProduct.is_allergen()
                         && currentProduct.getType() == ProductType.CLASSIC
                         && previousProduct.getType() == ProductType.CLASSIC
                         && !currentProduct.getGlaze().equals(previousProduct.getGlaze())) {
                     cleaningDuration = Duration.ofMinutes(ALLERGEN_DIFFERENT_GLAZE);
                 }
-                // 5. Текущий аллерген, предыдущий - нет
+                // 7. Текущий аллерген, предыдущий — нет
                 else if (!currentProduct.is_allergen() && previousProduct.is_allergen()) {
                     cleaningDuration = Duration.ofMinutes(CLEANING_AFTER_ALLERGEN);
                 }
-                // 6. Оба CLASSIC с разной глазурью
+                // 8. Оба CLASSIC, разные глазури
                 else if (currentProduct.getType() == ProductType.CLASSIC
                         && previousProduct.getType() == ProductType.CLASSIC
                         && !currentProduct.getGlaze().equals(previousProduct.getGlaze())) {
                     int minutes = MIN_CLASSIC_GLAZE + random.nextInt(MAX_CLASSIC_GLAZE - MIN_CLASSIC_GLAZE);
                     cleaningDuration = Duration.ofMinutes(minutes);
                 }
-                // 7. Одинаковые тип и глазурь, разные ID
+                // 9. Одинаковый тип и глазурь, но разные ID
                 else if (currentProduct.getType() == previousProduct.getType()
                         && currentProduct.getGlaze().equals(previousProduct.getGlaze())
                         && !currentProduct.getId().equals(previousProduct.getId())) {
                     cleaningDuration = Duration.ofMinutes(DIFFERENT_CURD_MASS);
                 }
-                // 8. Стержень ваниль
+                // 10. По умолчанию
                 else {
                     cleaningDuration = Duration.ofMinutes(MAX_CLASSIC_GLAZE);
                 }
@@ -245,6 +245,7 @@ public class ImportOrderData {
         return new Job(
                 id,
                 jobName + " #" + id,
+                np,
                 product,
                 quantity,
                 Duration.ofMinutes(duration),

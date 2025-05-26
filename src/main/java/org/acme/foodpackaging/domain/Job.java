@@ -118,6 +118,9 @@ public class Job {
     // Getters and setters
     // ************************************************************************
 
+
+    public String getNp() { return np; }
+
     public String getId() {
         return id;
     }
