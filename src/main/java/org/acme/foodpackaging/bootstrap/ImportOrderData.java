@@ -27,16 +27,18 @@ public class ImportOrderData {
             "4810268043727", true,
             "4810268043475", true,
             "4810268054969", true,
-            "4810268056826", true
+            "4810268056826", true,
+            "4810268054228", true,
+            "4810268053870", true
     );
 
     public LocalDateTime getDATE() { return DATE; }
     public PackagingSchedule scheduleInitializer(String date){
 
         final LocalDate START_DATE = LocalDate.parse(date);
-        final LocalDateTime START_DATE_TIME = LocalDateTime.of(START_DATE, LocalTime.MIDNIGHT);
-        final LocalDate END_DATE = START_DATE.plusDays(2);
-        final LocalDateTime END_DATE_TIME = LocalDateTime.of(END_DATE, LocalTime.MIDNIGHT);
+        final LocalDateTime START_DATE_TIME = LocalDateTime.of(START_DATE, LocalTime.of(8,0));
+        final LocalDate END_DATE = START_DATE.plusDays(1);
+        final LocalDateTime END_DATE_TIME = LocalDateTime.of(END_DATE, LocalTime.of(4,0));
 
         PackagingSchedule solution = new PackagingSchedule();
         this.shortener = new ProductNameShortener();
@@ -45,7 +47,7 @@ public class ImportOrderData {
         DATE = START_DATE_TIME;
 
         // Инициализация линий
-        List<Line> lines = createLines(LINE_COUNT, START_DATE_TIME);
+        List<Line> lines = createLines(START_DATE_TIME);
 
         // Загрузка продуктов и заданий из БД
         Map<String, Product> productMap = new HashMap<>();
@@ -134,7 +136,7 @@ public class ImportOrderData {
 
     private Product createProduct(String id, String name) {
         ProductType type = determineProductType(name);
-        return new Product(id, name, type, IS_ALLERGEN.getOrDefault(id, false));
+        return new Product(id, name, type, IS_ALLERGEN.getOrDefault(id, Boolean.FALSE));
     }
 
     private void initCleaningDurations(List<Product> products) {
@@ -208,10 +210,10 @@ public class ImportOrderData {
 
     }
 
-    private List<Line> createLines(int lineCount, LocalDateTime startDateTime){
+    private List<Line> createLines(LocalDateTime startDateTime){
 
-        List<Line> lines = new ArrayList<>(lineCount);
-        for(int i=1; i<=lineCount; ++i){
+        List<Line> lines = new ArrayList<>(ImportOrderData.LINE_COUNT);
+        for(int i = 1; i<= ImportOrderData.LINE_COUNT; ++i){
             String lineName = "Line" + String.valueOf(i);
             String operatorName = "Operator" + String.valueOf(i);
             Line line = new Line(String.valueOf(i), lineName, operatorName,startDateTime);
@@ -246,8 +248,8 @@ public class ImportOrderData {
                 quantity,
                 Duration.ofMinutes(duration),
                 startDate,
-                startDate.plusHours(23).plusMinutes(59).plusSeconds(59), // Идеальное время завершения
-                startDate.plusDays(1).plusHours(23).plusMinutes(59).plusSeconds(59), // Максимальное время завершения
+                startDate.plusDays(1).withHour(2).withMinute(0), // Идеальное время завершения
+                startDate.plusDays(1).withHour(4).withMinute(0), // Максимальное время завершения
                 priority,
                 false
         );
