@@ -5,13 +5,14 @@ import org.acme.foodpackaging.domain.*;
 import java.sql.*;
 import java.time.*;
 import java.util.*;
-import java.util.regex.*;
 
 public class ImportOrderData {
 
 
     private static final int LINE_COUNT = 6;
     private static final int DEFAULT_PRIORITY = 0;
+    private LocalDateTime DATE;
+    private ProductNameShortener shortener;
 
     final int ALLERGEN_DIFFERENT_GLAZE = 90;
     final int CLEANING_AFTER_ALLERGEN = 240;
@@ -26,22 +27,27 @@ public class ImportOrderData {
             "4810268043727", true,
             "4810268043475", true,
             "4810268054969", true,
-            "4810268056826", true
+            "4810268056826", true,
+            "4810268054228", true,
+            "4810268053870", true
     );
 
+    public LocalDateTime getDATE() { return DATE; }
     public PackagingSchedule scheduleInitializer(String date){
 
         final LocalDate START_DATE = LocalDate.parse(date);
-        final LocalDateTime START_DATE_TIME = LocalDateTime.of(START_DATE, LocalTime.MIDNIGHT);
+        final LocalDateTime START_DATE_TIME = LocalDateTime.of(START_DATE, LocalTime.of(8,0));
         final LocalDate END_DATE = START_DATE.plusDays(1);
-        final LocalDateTime END_DATE_TIME = LocalDateTime.of(END_DATE, LocalTime.MIDNIGHT);
+        final LocalDateTime END_DATE_TIME = LocalDateTime.of(END_DATE, LocalTime.of(4,0));
 
         PackagingSchedule solution = new PackagingSchedule();
+        this.shortener = new ProductNameShortener();
 
         solution.setWorkCalendar(new WorkCalendar(START_DATE, END_DATE));
+        DATE = START_DATE_TIME;
 
         // Инициализация линий
-        List<Line> lines = createLines(LINE_COUNT, START_DATE_TIME);
+        List<Line> lines = createLines(START_DATE_TIME);
 
         // Загрузка продуктов и заданий из БД
         Map<String, Product> productMap = new HashMap<>();
@@ -88,8 +94,8 @@ public class ImportOrderData {
                         String snm = resultSet.getString("SNM");
                         String name = resultSet.getString("NAME");
 
-                        int defaultDuration = 0; // Это может быть 0!
                         if (quantity == 0) continue;
+                        int defaultDuration =quantity/200;
 
                         Product product = productMap.get(ean13);
                         if (product == null) {
@@ -101,6 +107,7 @@ public class ImportOrderData {
                         // Создание задания
                         Job job = createJob(
                                 String.valueOf(++id),
+                                np,
                                 product,
                                 quantity,
                                 defaultDuration,
@@ -129,11 +136,10 @@ public class ImportOrderData {
 
     private Product createProduct(String id, String name) {
         ProductType type = determineProductType(name);
-        return new Product(id, name, type, IS_ALLERGEN.getOrDefault(id, false));
+        return new Product(id, name, type, IS_ALLERGEN.getOrDefault(id, Boolean.FALSE));
     }
 
-    private void initCleaningDurations(List<Product> products){
-
+    private void initCleaningDurations(List<Product> products) {
         Random random = new Random();
 
         for (Product currentProduct : products) {
@@ -142,55 +148,56 @@ public class ImportOrderData {
             for (Product previousProduct : products) {
                 Duration cleaningDuration;
 
-                // 1. Проверка на одинаковый ID
+
+                // 1. Одинаковый продукт → без чистки
                 if (currentProduct.getId().equals(previousProduct.getId())) {
                     cleaningDuration = Duration.ZERO;
                 }
-                // 2. Предыдущий продукт - CACTUS
-                else if (previousProduct.getType() == ProductType.CACTUS) {
+                // 2. Один из продуктов — CACTUS → всегда 3 часа
+                else if (currentProduct.getType() == ProductType.CACTUS && previousProduct.getType() != ProductType.CACTUS
+                        || currentProduct.getType() != ProductType.CACTUS && previousProduct.getType() == ProductType.CACTUS) {
                     cleaningDuration = Duration.ofMinutes(CACTUS_CLEANING);
                 }
-                // 2. Предыдущий продукт - CACTUS
+                // 3. Предыдущий аллерген, текущий — нет
                 else if (previousProduct.is_allergen() && !currentProduct.is_allergen()) {
                     cleaningDuration = Duration.ofMinutes(CLEANING_AFTER_ALLERGEN);
                 }
-
+                // 4. Текущий CLASSIC, предыдущий ROD
                 else if (currentProduct.getType() == ProductType.CLASSIC
                         && previousProduct.getType() == ProductType.ROD) {
                     cleaningDuration = Duration.ofMinutes(FROM_ROD_TO_CLASSIC);
                 }
-                // 3. Текущий ROD, разные ID и предыдущий не C65_47
+                // 5. Оба ROD, разные глазури
                 else if (currentProduct.getType() == ProductType.ROD
                         && previousProduct.getType() == ProductType.ROD
                         && !previousProduct.getGlaze().equals(GlazeType.C65_47)) {
                     cleaningDuration = Duration.ofMinutes(ROD_DIFFERENT_FILLING);
                 }
-
-                // 4. Оба аллергены с разной глазурью
+                // 6. Оба аллергены, разные глазури
                 else if (currentProduct.is_allergen() && previousProduct.is_allergen()
                         && currentProduct.getType() == ProductType.CLASSIC
                         && previousProduct.getType() == ProductType.CLASSIC
                         && !currentProduct.getGlaze().equals(previousProduct.getGlaze())) {
                     cleaningDuration = Duration.ofMinutes(ALLERGEN_DIFFERENT_GLAZE);
                 }
-                // 5. Текущий аллерген, предыдущий - нет
+                // 7. Текущий аллерген, предыдущий — нет
                 else if (!currentProduct.is_allergen() && previousProduct.is_allergen()) {
                     cleaningDuration = Duration.ofMinutes(CLEANING_AFTER_ALLERGEN);
                 }
-                // 6. Оба CLASSIC с разной глазурью
+                // 8. Оба CLASSIC, разные глазури
                 else if (currentProduct.getType() == ProductType.CLASSIC
                         && previousProduct.getType() == ProductType.CLASSIC
                         && !currentProduct.getGlaze().equals(previousProduct.getGlaze())) {
                     int minutes = MIN_CLASSIC_GLAZE + random.nextInt(MAX_CLASSIC_GLAZE - MIN_CLASSIC_GLAZE);
                     cleaningDuration = Duration.ofMinutes(minutes);
                 }
-                // 7. Одинаковые тип и глазурь, разные ID
+                // 9. Одинаковый тип и глазурь, но разные ID
                 else if (currentProduct.getType() == previousProduct.getType()
                         && currentProduct.getGlaze().equals(previousProduct.getGlaze())
                         && !currentProduct.getId().equals(previousProduct.getId())) {
                     cleaningDuration = Duration.ofMinutes(DIFFERENT_CURD_MASS);
                 }
-                // 8. Стержень ваниль
+                // 10. По умолчанию
                 else {
                     cleaningDuration = Duration.ofMinutes(MAX_CLASSIC_GLAZE);
                 }
@@ -203,12 +210,13 @@ public class ImportOrderData {
 
     }
 
-    private List<Line> createLines(int lineCount, LocalDateTime startDateTime){
+    private List<Line> createLines(LocalDateTime startDateTime){
 
-        List<Line> lines = new ArrayList<>(lineCount);
-        for(int i=1; i<=lineCount; ++i){
-            String name = "Line" + String.valueOf(i);
-            Line line = new Line(String.valueOf(i), name, "Miku",startDateTime);
+        List<Line> lines = new ArrayList<>(ImportOrderData.LINE_COUNT);
+        for(int i = 1; i<= ImportOrderData.LINE_COUNT; ++i){
+            String lineName = "Line" + String.valueOf(i);
+            String operatorName = "Operator" + String.valueOf(i);
+            Line line = new Line(String.valueOf(i), lineName, operatorName,startDateTime);
             lines.add(line);
         }
         return lines;
@@ -230,22 +238,18 @@ public class ImportOrderData {
         return true;
     }
 
-    private Job createJob(String id, Product product, int quantity, int duration, int priority, LocalDateTime startDate) {
-        Pattern pattern = Pattern.compile("\"([^\"]+)\"");
-        String jobName = product.getName();
-        Matcher matcher = pattern.matcher(jobName);
-        if (matcher.find()) {
-            jobName = matcher.group(1); // Внутри кавычек
-        }
+    private Job createJob(String id, String np, Product product, int quantity, int duration, int priority, LocalDateTime startDate) {
+        String jobName = shortener.getShortName(product.getId(), product.getName());
         return new Job(
                 id,
-                jobName + " #" + id,
+                jobName,
+                np,
                 product,
                 quantity,
                 Duration.ofMinutes(duration),
                 startDate,
-                startDate.plusHours(3), // Идеальное время завершения
-                startDate.plusHours(6), // Максимальное время завершения
+                startDate.plusDays(1).withHour(2).withMinute(0), // Идеальное время завершения
+                startDate.plusDays(1).withHour(4).withMinute(0), // Максимальное время завершения
                 priority,
                 false
         );

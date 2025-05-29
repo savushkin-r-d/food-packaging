@@ -3,14 +3,23 @@ package org.acme.foodpackaging.domain;
 import java.util.Map;
 
 public enum GlazeType {
-    C6,
-    C4,
-    G15,
-    C65_47,
-    ALENKA,
-    CARAMEL,
-    CACTUS;
+    C6("C6"),
+    C4("C4"),
+    G15("G15"),
+    C65_47("C65_47"),
+    ALENKA("ALENKA"),
+    CARAMEL("CARAMEL"),
+    CACTUS("CACTUS");
 
+    private final String displayName;
+
+    GlazeType(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
     private static final Map<ProductType, GlazeType> DEFAULT_BY_TYPE = Map.of(
             ProductType.CLASSIC, C4,
             ProductType.ROD, C6,
@@ -23,6 +32,7 @@ public enum GlazeType {
             "4810268043475", C65_47,
             "4810268050282", C65_47,
             "4810268040450", CARAMEL,
+            "4810268057748", CARAMEL,
             "4810268043727", G15
     );
 
