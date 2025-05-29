@@ -41,6 +41,7 @@ public class ImportOrderData {
         final LocalDateTime END_DATE_TIME = LocalDateTime.of(END_DATE, LocalTime.of(4,0));
 
         PackagingSchedule solution = new PackagingSchedule();
+        DurationProvider provider = new DurationProvider();
         this.shortener = new ProductNameShortener();
 
         solution.setWorkCalendar(new WorkCalendar(START_DATE, END_DATE));
@@ -94,9 +95,6 @@ public class ImportOrderData {
                         String snm = resultSet.getString("SNM");
                         String name = resultSet.getString("NAME");
 
-                        if (quantity == 0) continue;
-                        int defaultDuration =quantity/200;
-
                         Product product = productMap.get(ean13);
                         if (product == null) {
                             product = createProduct(ean13, name);
@@ -110,7 +108,7 @@ public class ImportOrderData {
                                 np,
                                 product,
                                 quantity,
-                                defaultDuration,
+                                provider,
                                 DEFAULT_PRIORITY,
                                 START_DATE_TIME
                         );
@@ -238,7 +236,7 @@ public class ImportOrderData {
         return true;
     }
 
-    private Job createJob(String id, String np, Product product, int quantity, int duration, int priority, LocalDateTime startDate) {
+    private Job createJob(String id, String np, Product product, int quantity, DurationProvider provider, int priority, LocalDateTime startDate) {
         String jobName = shortener.getShortName(product.getId(), product.getName());
         return new Job(
                 id,
@@ -246,13 +244,12 @@ public class ImportOrderData {
                 np,
                 product,
                 quantity,
-                Duration.ofMinutes(duration),
+                provider,
                 startDate,
                 startDate.plusDays(1).withHour(2).withMinute(0), // Идеальное время завершения
                 startDate.plusDays(1).withHour(4).withMinute(0), // Максимальное время завершения
                 priority,
                 false
         );
-
     }
 }
