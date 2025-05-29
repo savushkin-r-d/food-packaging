@@ -73,6 +73,7 @@ public class ImportOrderData {
                 preparedStatement.setDouble(3, 0.1);                  // Параметр для m.MASSA
 
                 int id=0;
+                int duration;
                 // Выполнение запроса
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     // Обработка результата
@@ -94,9 +95,6 @@ public class ImportOrderData {
                         String snm = resultSet.getString("SNM");
                         String name = resultSet.getString("NAME");
 
-                        if (quantity == 0) continue;
-                        int defaultDuration =quantity/200;
-
                         Product product = productMap.get(ean13);
                         if (product == null) {
                             product = createProduct(ean13, name);
@@ -104,13 +102,25 @@ public class ImportOrderData {
                             products.add(product); // Добавляем только один раз
                         }
 
+                        if(product.getType() == ProductType.PLUSH){
+                            duration = quantity/164;
+                        }
+                        else if(product.getType() == ProductType.CACTUS){
+                            duration = quantity/184;
+                        }
+                        else if(product.getType() == ProductType.ROD){
+                            duration = quantity/198;
+                        }
+                        else{
+                            duration = quantity/200;
+                        }
                         // Создание задания
                         Job job = createJob(
                                 String.valueOf(++id),
                                 np,
                                 product,
                                 quantity,
-                                defaultDuration,
+                                duration,
                                 DEFAULT_PRIORITY,
                                 START_DATE_TIME
                         );
