@@ -30,4 +30,4 @@ java -jar target/food-packaging-run.jar 2025-05-28
 
 The data for the solver from the database in `src/main/resources/importFiles/2025-05-28Import.yaml`.
 
-The solution will be recorded in `src/main/resources/ExportFiles/2025-05-28Export.json`.
+The solution will be recorded in `src/main/resources/exportFiles/2025-05-28Export.json`.
