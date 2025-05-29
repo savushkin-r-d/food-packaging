@@ -41,6 +41,7 @@ public class ImportOrderData {
         final LocalDateTime END_DATE_TIME = LocalDateTime.of(END_DATE, LocalTime.of(4,0));
 
         PackagingSchedule solution = new PackagingSchedule();
+        DurationProvider provider = new DurationProvider();
         this.shortener = new ProductNameShortener();
 
         solution.setWorkCalendar(new WorkCalendar(START_DATE, END_DATE));
@@ -73,7 +74,6 @@ public class ImportOrderData {
                 preparedStatement.setDouble(3, 0.1);                  // Параметр для m.MASSA
 
                 int id=0;
-                int duration;
                 // Выполнение запроса
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     // Обработка результата
@@ -102,25 +102,13 @@ public class ImportOrderData {
                             products.add(product); // Добавляем только один раз
                         }
 
-                        if(product.getType() == ProductType.PLUSH){
-                            duration = quantity/164;
-                        }
-                        else if(product.getType() == ProductType.CACTUS){
-                            duration = quantity/184;
-                        }
-                        else if(product.getType() == ProductType.ROD){
-                            duration = quantity/198;
-                        }
-                        else{
-                            duration = quantity/200;
-                        }
                         // Создание задания
                         Job job = createJob(
                                 String.valueOf(++id),
                                 np,
                                 product,
                                 quantity,
-                                duration,
+                                provider,
                                 DEFAULT_PRIORITY,
                                 START_DATE_TIME
                         );
@@ -248,7 +236,7 @@ public class ImportOrderData {
         return true;
     }
 
-    private Job createJob(String id, String np, Product product, int quantity, int duration, int priority, LocalDateTime startDate) {
+    private Job createJob(String id, String np, Product product, int quantity, DurationProvider provider, int priority, LocalDateTime startDate) {
         String jobName = shortener.getShortName(product.getId(), product.getName());
         return new Job(
                 id,
@@ -256,13 +244,12 @@ public class ImportOrderData {
                 np,
                 product,
                 quantity,
-                Duration.ofMinutes(duration),
+                provider,
                 startDate,
                 startDate.plusDays(1).withHour(2).withMinute(0), // Идеальное время завершения
                 startDate.plusDays(1).withHour(4).withMinute(0), // Максимальное время завершения
                 priority,
                 false
         );
-
     }
 }
