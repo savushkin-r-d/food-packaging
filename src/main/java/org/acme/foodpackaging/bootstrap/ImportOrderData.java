@@ -5,7 +5,6 @@ import org.acme.foodpackaging.domain.*;
 import java.sql.*;
 import java.time.*;
 import java.util.*;
-import java.util.regex.*;
 
 public class ImportOrderData {
 
@@ -13,6 +12,7 @@ public class ImportOrderData {
     private static final int LINE_COUNT = 6;
     private static final int DEFAULT_PRIORITY = 0;
     private LocalDateTime DATE;
+    private ProductNameShortener shortener;
 
     final int ALLERGEN_DIFFERENT_GLAZE = 90;
     final int CLEANING_AFTER_ALLERGEN = 240;
@@ -39,6 +39,7 @@ public class ImportOrderData {
         final LocalDateTime END_DATE_TIME = LocalDateTime.of(END_DATE, LocalTime.MIDNIGHT);
 
         PackagingSchedule solution = new PackagingSchedule();
+        this.shortener = new ProductNameShortener();
 
         solution.setWorkCalendar(new WorkCalendar(START_DATE, END_DATE));
         DATE = START_DATE_TIME;
@@ -236,15 +237,10 @@ public class ImportOrderData {
     }
 
     private Job createJob(String id, String np, Product product, int quantity, int duration, int priority, LocalDateTime startDate) {
-        Pattern pattern = Pattern.compile("\"([^\"]+)\"");
-        String jobName = product.getName();
-        Matcher matcher = pattern.matcher(jobName);
-        if (matcher.find()) {
-            jobName = matcher.group(1); // Внутри кавычек
-        }
+        String jobName = shortener.getShortName(product.getId(), product.getName());
         return new Job(
                 id,
-                jobName + " #" + id,
+                jobName,
                 np,
                 product,
                 quantity,
