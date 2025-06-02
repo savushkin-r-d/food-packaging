@@ -27,7 +27,6 @@ public class FoodPackagingConstraintProvider implements ConstraintProvider {
                 // Medium constraints
                 idealEndDateTime(factory),
                 // Soft constraints
-                //operatorCleaningConflict(factory),
                 minimizeMakespan(factory)
         };
     }
