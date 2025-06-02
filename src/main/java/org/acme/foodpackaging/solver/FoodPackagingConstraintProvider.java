@@ -20,15 +20,13 @@ public class FoodPackagingConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
                 // Hard constraints
                 maxEndDateTime(factory),
-
                 plushMustBeOnLine1(factory),
                 rodOnlyOnLines456(factory),
                 cactusOnlyOnLines123(factory),
-
+                classicOnlyOnLines1236(factory),
                 // Medium constraints
                 idealEndDateTime(factory),
                 // Soft constraints
-                operatorCleaningConflict(factory),
                 minimizeMakespan(factory)
         };
     }
@@ -124,6 +122,12 @@ public class FoodPackagingConstraintProvider implements ConstraintProvider {
                 .asConstraint("CACTUS must be on lines 1, 2, 3");
     }
 
-
-
+    protected Constraint classicOnlyOnLines1236(ConstraintFactory factory) {
+        return factory.forEach(Job.class)
+                .filter(job -> job.getLine() != null && job.getProduct() != null)
+                .filter(job -> job.getProduct().getType() == ProductType.CLASSIC)
+                .filter(job -> !Set.of("1", "2", "3", "6").contains(job.getLine().getId()))
+                .penalizeLong(HardMediumSoftLongScore.ONE_HARD, job -> 1000L)
+                .asConstraint("CLASSIC must be on lines 1, 2, 3,6");
+    }
 }
