@@ -8,85 +8,84 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class ExcelExporter {
 
-    String[][] data = {
-            {"ID", "Имя", "Оценка"},
-            {"1", "Алиса", "95"},
-            {"2", "Боб", "88"},
-            {"3", "Чарли", "92"}
-    };
-
-    public ExcelExporter() {
-       importDataFromDB();
+    public ExcelExporter(String date, List<Job> jobs) {
+       importDataFromDB(date, jobs);
     }
 
-    private void export(Workbook workbook, Sheet sheet) {
-        for (int i = 0; i < data.length; i++) {
-            Row row = sheet.createRow(i); // ✔️ правильный Row
-            for (int j = 0; j < data[i].length; j++) {
-                Cell cell = row.createCell(j);
-                cell.setCellValue(data[i][j]);
-            }
-        }
-
-        for (int i = 0; i < data[0].length; i++) {
-            sheet.autoSizeColumn(i);
-        }
-
-        try (FileOutputStream fos = new FileOutputStream("src/main/resources/report.xlsx")) {
-            workbook.write(fos);
-            workbook.close();
-            System.out.println("Excel файл успешно создан: report.xlsx");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+   private String  formatTime(Duration duration){
+       long totalMinutes = duration.toMinutes();
+       long hours = totalMinutes / 60;
+       long minutes = totalMinutes % 60;
+       return String.format("%02d:%02d", hours, minutes);
     }
-    private void importDataFromDB() {
+    private void importDataFromDB(String date, List<Job> jobs) {
         String url = "jdbc:sqlserver://10.30.0.108;databaseName=prommark;integratedSecurity=true;encrypt=true;trustServerCertificate=true";
         String sqlQuery = "SELECT TOP (1000) [KMC], [NP], [DTS], [NKOLE], [MRPL], [DTE], [LINEID], [STP_AVT] " +
                 "FROM [prommark].[dbo].[PM_ASSCC] " +
-                "WHERE KMC LIKE ? AND DTF = ? ORDER BY DTE";
+                "WHERE KMC LIKE ? AND DTF = ? ORDER BY NP";
         try (Connection connection = DriverManager.getConnection(url);
              PreparedStatement ps = connection.prepareStatement(sqlQuery);
              Workbook workbook = new XSSFWorkbook()) {
 
             ps.setString(1, "0307060162%");
-            ps.setString(2, "2025-06-15T00:00:00");
+            ps.setString(2, date + "T00:00:00");
+
+            Sheet sheet = workbook.createSheet("Data");
+            // Заголовок
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("NP");
+            headerRow.createCell(1).setCellValue("KMC");
+            headerRow.createCell(2).setCellValue("Количество (факт)");
+            headerRow.createCell(3).setCellValue("Количество (планировщик)");
+            headerRow.createCell(4).setCellValue("Время старта выполнения (факт)");
+            headerRow.createCell(5).setCellValue("Время завершения фасовки (факт)");
+            headerRow.createCell(6).setCellValue("Продолжительность фасовки (факт)");
+            headerRow.createCell(7).setCellValue("Продолжительность фасовки (планировщик)");
 
             try (ResultSet rs = ps.executeQuery()) {
-
-                Sheet sheet = workbook.createSheet("Data");
-                ResultSetMetaData metaData = rs.getMetaData();
-                int columnCount = metaData.getColumnCount();
-
-                // Заголовки
-                Row headerRow = sheet.createRow(0);
-                for (int i = 1; i <= columnCount; i++) {
-                    Cell cell = headerRow.createCell(i - 1);
-                    cell.setCellValue(metaData.getColumnLabel(i));
-                }
-
                 // Данные
                 int rowIdx = 1;
                 while (rs.next()) {
-                    Row row = sheet.createRow(rowIdx++);
-                    for (int i = 1; i <= columnCount; i++) {
-                        Cell cell = row.createCell(i - 1);
-                        cell.setCellValue(rs.getString(i));
-                    }
-                }
+                    String kmc = rs.getString("KMC");
+                    String np = rs.getString("NP");
+                    String nkole = rs.getString("NKOLE");
+                    LocalDateTime dts = rs.getTimestamp("DTS").toLocalDateTime();
+                    LocalDateTime dte = rs.getTimestamp("DTE").toLocalDateTime();
 
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                    Duration jobDuration = Duration.between(dts, dte);
+
+                    Row row = sheet.createRow(rowIdx++);
+                    row.createCell(0).setCellValue(np);
+                    row.createCell(1).setCellValue(kmc);
+                    row.createCell(2).setCellValue(nkole);
+                    row.createCell(4).setCellValue(dts.format(formatter));
+                    row.createCell(5).setCellValue(dte.format(formatter));
+                    row.createCell(6).setCellValue(formatTime(jobDuration));
+                    for(Job job : jobs){
+                        if(job.getNp().equals(np)){
+                            row.createCell(3).setCellValue(job.getQuantity());
+                            row.createCell(7).setCellValue(formatTime(job.getDuration()));
+                        }
+                    }
+
+                }
                 // Автоширина колонок
-                for (int i = 0; i < columnCount; i++) {
+                for (int i = 0; i < 7; i++) {
                     sheet.autoSizeColumn(i);
                 }
-
                 // Сохранение Excel-файла
-                try (FileOutputStream fos = new FileOutputStream("src/main/resources/export_from_db.xlsx")) {
+                try (FileOutputStream fos = new FileOutputStream("src/main/resources/excelExport/" + date + ".xlsx")) {
                     workbook.write(fos);
-                    System.out.println("✅ Данные успешно экспортированы в Excel: export_from_db.xlsx");
+                    System.out.println("✅ Данные успешно экспортированы в Excel:" + "src/main/resources/excelExport/" + date + ".xlsx");
                 }
             }
 
