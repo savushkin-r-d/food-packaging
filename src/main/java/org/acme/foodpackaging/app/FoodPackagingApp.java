@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import org.acme.foodpackaging.bootstrap.DataExporter;
+import org.acme.foodpackaging.bootstrap.ExcelExporter;
 import org.acme.foodpackaging.bootstrap.ImportOrderData;
 import org.acme.foodpackaging.domain.Job;
 import org.acme.foodpackaging.domain.Line;
@@ -28,7 +29,7 @@ public class FoodPackagingApp {
                     .withConstraintProviderClass(FoodPackagingConstraintProvider.class)
                     // The solver runs only for 5 seconds on this small dataset.
                     // It's recommended to run for at least 5 minutes ("5m") otherwise.
-                    .withTerminationSpentLimit(Duration.ofSeconds(5)));
+                    .withTerminationSpentLimit(Duration.ofSeconds(90)));
 
             ImportOrderData importData = new ImportOrderData();
 
@@ -38,8 +39,9 @@ public class FoodPackagingApp {
             exporter.exportAsYaml(problem);
             // Solve the problem
             Solver<PackagingSchedule> solver = solverFactory.buildSolver();
-            PackagingSchedule solution = solver.solve(problem);
 
+            PackagingSchedule solution = solver.solve(problem);
+            ExcelExporter excelExporter = new ExcelExporter(args[0],solution.getJobs());
             HardMediumSoftLongScore score = problem.getScore();
             SolutionManager< PackagingSchedule, HardMediumSoftScore> solutionManager = SolutionManager.create(solverFactory);
             ScoreExplanation< PackagingSchedule, HardMediumSoftScore> scoreExplanation = solutionManager.explain(solution);
